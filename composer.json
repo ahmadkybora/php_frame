@@ -1,0 +1,17 @@
+{
+    "name": "kybora/php_frame",
+    "author": [{
+        "name": "ahmad montazeri",
+        "email": ""
+    }],
+    "config": {
+        "optimize-autoloader": true
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "files": ["app/functions/helper.php"]
+    },
+    "require": {}
+}
