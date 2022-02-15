@@ -1,6 +1,9 @@
 <?php
 namespace App\Services;
 
+use App\Services\Exception\ForbiddenException;
+use App\Services\Exception\NotFoundException;
+
 class Router {
 
     public Request $request;
@@ -36,75 +39,68 @@ class Router {
         $callback = $this->routes[$method][$path] ?? false;
 
         if($callback === false) {
-            // در صورتی که کد مورد نظر 404 باشد
-            $this->response->setStatusCode(404);
-            return $this->renderView("_404");
+            throw new NotFoundException();
         }
 
         // در صورتی که رسته باشد
         if(is_string($callback)) {
-            return $this->renderView($callback);
+            return Application::$app->view->renderView($callback);
         }
 
         // در صورتی که آرایه باشد 
         // یک آبجکت جدید میسازد
         // در اندیس صفرم
         if(is_array($callback)) {
-            Application::$app->controller = new $callback[0]();
-            $callback[0] = Application::$app->controller;
+            $controller = new $callback[0]();
+            Application::$app->controller = $controller;
+            $controller->action = $callback[1];
+            $callback[0] = $controller;
+            foreach($controller->getMiddlewares() as $middleware) {
+                $middleware->execute();
+            }
         }
 
-        return call_user_func($callback, $this->request);
+        return call_user_func($callback, $this->request, $this->response);
     }
 
     // 3 مند زیر برای 
     // ساخت یک نوع تمپلیت انجین ساده است
     // که اگر به کلمه مورد نظر برسد
     // مقادیر فایل مورد نظر را در فایل دگر جایگزینی میکند
-    public function renderView($view, $params = [])
-    {
-        $layoutContent = $this->layoutContent();
-        $viewContent = $this->renderOnlyView($view, $params);
+    // public function renderView($view, $params = [])
+    // {
+    //     return Application::$app->view->renderView($view, $params);
+    // }
 
-        // اگر در مقدار مورد نظر که دو فایل
-        // میباشد برسد مقادریر را جایگزین میکند
-        return str_replace('{{content}}', $viewContent, $layoutContent);
+    // public function renderContent($viewContent)
+    // {
+    //     return Application::$app->view->renderView($view, $params);
+    // }
 
-        include_once Application::$ROOT_DIR . '/views/' . $view . '.php';
-    }
+    // protected function layoutContent()
+    // {
+    //     $layout = Application::$app->layout;
+    //     if(Application::$app->controller) {
+    //         $layout = Application::$app->controller->layout;
+    //     }
+    //     ob_start();
+    //     include_once Application::$ROOT_DIR . '/views/layouts/' . $layout . '.php';
+    //     return ob_get_clean();
+    // }
 
-    public function renderContent($viewContent)
-    {
-        $layoutContent = $this->layoutContent();
+    // protected function renderOnlyView($view, $params)
+    // {
+    //     foreach($params as $key => $value) {
+    //         // https://www.php.net/manual/en/language.variables.variable.php
+    //         // varaible varailbles
+    //         // اسم متغییر را برمیگرداند 
+    //         $$key = $value;
+    //     }
 
-        // اگر در مقدار مورد نظر که دو فایل
-        // میباشد برسد مقادریر را جایگزین میکند
-        return str_replace('{{content}}', $viewContent, $layoutContent);
-
-        include_once Application::$ROOT_DIR . '/views/' . $view . '.php';
-    }
-
-    protected function layoutContent()
-    {
-        $layout = Application::$app->controller->layout;
-        ob_start();
-        include_once Application::$ROOT_DIR . '/views/layouts/' . $layout . '.php';
-        return ob_get_clean();
-    }
-
-    protected function renderOnlyView($view, $params)
-    {
-        foreach($params as $key => $value) {
-            // https://www.php.net/manual/en/language.variables.variable.php
-            // varaible varailbles
-            // اسم متغییر را برمیگرداند 
-            $$key = $value;
-        }
-
-        ob_start();
-        include_once Application::$ROOT_DIR . '/views/' . $view . '.php';
-        return ob_get_clean();
-    }
+    //     ob_start();
+    //     include_once Application::$ROOT_DIR . '/views/' . $view . '.php';
+    //     return ob_get_clean();
+    // }
 }
 
 // echo '<pre style="background-color:orange; width: 250px">';

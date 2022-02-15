@@ -1,20 +1,23 @@
 <h1>Register</h1>
-
-<form action="" method="post">
-  <div class="mb-3">
-    <input type="text" name="first_name" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+<?php $form = \App\Services\Form\Form::begin('', 'post'); ?>
+<div class="row">
+  <div class="col-md-4">
+    <?= $form->field($model, 'first_name'); ?>
   </div>
-  <div class="mb-3">
-    <input type="text" name="last_name" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+  <div class="col-md-4">
+    <?= $form->field($model, 'last_name'); ?>
   </div>
-  <div class="mb-3">
-    <input type="email" name="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+  <div class="col-md-8">
+    <?= $form->field($model, 'email'); ?>
   </div>
-  <div class="mb-3">
-    <input type="password" name="password" class="form-control" id="exampleInputPassword1">
+  <div class="col-md-8">
+    <?= $form->field($model, 'password')->passwordField(); ?>
   </div>
-  <div class="mb-3">
-    <input type="password" name="password_confirm" class="form-control" id="exampleInputPassword1">
+  <div class="col-md-8">
+    <?= $form->field($model, 'password_confirm')->passwordField(); ?>
   </div>
-  <button type="submit" name="" class="btn btn-primary">Submit</button>
-</form>
+  <div class="col-md-8">
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </div>
+</div>
+<?php echo \App\Services\Form\Form::end(); ?>

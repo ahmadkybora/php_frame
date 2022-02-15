@@ -1,8 +1,11 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\ContactForm;
+use App\Services\Application;
 use App\Services\Controller;
 use App\Services\Request;
+use App\Services\Response;
 
 class SiteController extends Controller{
 
@@ -14,17 +17,19 @@ class SiteController extends Controller{
         ];
         return $this->render('home', $params);
     }
-    public function contact()
-    {
-        return $this->render('contact');
-    }
 
-    public function handleContact(Request $request)
+    public function contact(Request $request, Response $response)
     {
-        $body = $request->getBody();
-        echo '<pre style="background-color:orange; width: 250px">';
-        var_dump($body);
-        echo '</pre>';
-        exit;
+        $contact = new ContactForm();
+        if($request->isPost()) {
+            $contact->loadData($request->getBody());
+            if($contact->validate() && $contact->send()) {
+                Application::$app->session->setFlash('success', 'Thank you');
+                return $response->redirect('/contact');
+            }
+        }
+        return $this->render('contact', [
+            'model' => $contact
+        ]);
     }
 }
